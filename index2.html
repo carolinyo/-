@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>五年級臺灣史前考古大冒險</title>
+
+<style>
+*{box-sizing:border-box}
+
+body{
+    margin:0;
+    font-family:"Microsoft JhengHei","Noto Sans TC",sans-serif;
+    background:linear-gradient(135deg,#e8f5e9,#fff8e1);
+    color:#333;
+}
+
+.container{
+    max-width:900px;
+    margin:auto;
+    padding:20px;
+}
+
+header{
+    background:#6d4c41;
+    color:white;
+    border-radius:20px;
+    padding:25px 20px;
+    text-align:center;
+    box-shadow:0 5px 15px #999;
+}
+
+header h1{
+    margin:0 0 10px;
+    font-size:clamp(28px,5vw,44px);
+}
+
+header p{
+    margin:0;
+    font-size:18px;
+}
+
+.info{
+    display:flex;
+    justify-content:space-between;
+    gap:10px;
+    margin:18px 0;
+    flex-wrap:wrap;
+}
+
+.info div{
+    background:white;
+    padding:10px 18px;
+    border-radius:12px;
+    box-shadow:0 2px 7px #ccc;
+    font-weight:bold;
+}
+
+.progress{
+    height:14px;
+    background:#ddd;
+    border-radius:20px;
+    overflow:hidden;
+    margin-bottom:20px;
+}
+
+.progress-bar{
+    height:100%;
+    width:0%;
+    background:#43a047;
+    transition:.4s;
+}
+
+.card{
+    background:white;
+    border-radius:20px;
+    padding:25px;
+    box-shadow:0 4px 15px #ccc;
+}
+
+.question-number{
+    color:#6d4c41;
+    font-weight:bold;
+    font-size:18px;
+}
+
+.question{
+    font-size:25px;
+    font-weight:bold;
+    line-height:1.5;
+    margin:12px 0 25px;
+}
+
+.option{
+    width:100%;
+    padding:15px;
+    margin:10px 0;
+    border:3px solid #ddd;
+    background:#fafafa;
+    border-radius:14px;
+    text-align:left;
+    font-size:18px;
+    cursor:pointer;
+    transition:.2s;
+}
+
+.option:hover{
+    background:#fff3e0;
+    border-color:#ffb74d;
+    transform:translateY(-2px);
+}
+
+.option.correct{
+    background:#c8e6c9;
+    border-color:#43a047;
+}
+
+.option.wrong{
+    background:#ffcdd2;
+    border-color:#e53935;
+}
+
+.option:disabled{
+    cursor:default;
+}
+
+.feedback{
+    display:none;
+    margin-top:20px;
+    padding:16px;
+    border-radius:14px;
+    background:#fff8e1;
+    line-height:1.7;
+    font-size:17px;
+}
+
+.next{
+    display:none;
+    width:100%;
+    margin-top:20px;
+    padding:15px;
+    border:0;
+    border-radius:14px;
+    background:#6d4c41;
+    color:white;
+    font-size:20px;
+    font-weight:bold;
+    cursor:pointer;
+}
+
+.next:hover{
+    background:#4e342e;
+}
+
+.result{
+    display:none;
+    text-align:center;
+}
+
+.score{
+    font-size:60px;
+    font-weight:bold;
+    color:#e65100;
+    margin:20px;
+}
+
+.badge{
+    font-size:80px;
+}
+
+.result h2{
+    font-size:32px;
+}
+
+.restart{
+    padding:15px 35px;
+    border:0;
+    border-radius:14px;
+    background:#43a047;
+    color:white;
+    font-size:20px;
+    font-weight:bold;
+    cursor:pointer;
+}
+
+@media(max-width:600px){
+    .container{padding:10px}
+    .card{padding:18px}
+    .question{font-size:21px}
+    .option{font-size:16px}
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<header>
+    <h1>🏺 五年級臺灣史前考古大冒險</h1>
+    <p>戴好安全帽，準備進入史前時代！</p>
+</header>
+
+<div class="info">
+    <div>🏆 得分：<span id="score">0</span></div>
+    <div>📚 題目：<span id="current">1</span> / 20</div>
+</div>
+
+<div class="progress">
+    <div class="progress-bar" id="progress"></div>
+</div>
+
+<div class="card" id="quiz">
+
+    <div class="question-number" id="questionNumber"></div>
+
+    <div class="question" id="question"></div>
+
+    <div id="options"></div>
+
+    <div class="feedback" id="feedback"></div>
+
+    <button class="next" id="next" onclick="nextQuestion()">
+        下一題 ➜
+    </button>
+
+</div>
+
+<div class="card result" id="result">
+
+    <div class="badge" id="badge">🏆</div>
+
+    <h2>考古冒險完成！</h2>
+
+    <div class="score">
+        <span id="finalScore">0</span> 分
+    </div>
+
+    <p id="resultText"></p>
+
+    <button class="restart" onclick="restartGame()">
+        🔄 再挑戰一次
+    </button>
+
+</div>
+
+</div>
+
+<script>
+
+const questions = [
+
+{
+q:"史前時代主要是指？",
+a:["有文字記載以前","有電腦以後","有火車以後","有網路以後"],
+e:"史前時代通常指文字出現以前，人們留下的遺物與遺跡成為重要研究證據。"
+},
+
+{
+q:"考古學家研究史前人類常利用？",
+a:["遺物與遺跡","現代小說","新聞報紙","電視節目"],
+e:"考古學家會透過遺物、遺跡、地層等證據，推測古人的生活方式。"
+},
+
+{
+q:"長濱文化的重要遺址是？",
+a:["八仙洞","故宮","赤崁樓","阿里山"],
+e:"八仙洞位於臺東，是長濱文化的重要遺址。"
+},
+
+{
+q:"新石器時代常見的特色是？",
+a:["磨製石器與陶器","使用智慧型手機","大量使用汽車","發明飛機"],
+e:"新石器時代常見磨製石器、陶器，以及較穩定的生活型態。"
+},
+
+{
+q:"十三行文化的重要特色之一是？",
+a:["製作鐵器並有貿易","使用蒸汽火車","建造摩天大樓","使用塑膠製品"],
+e:"十三行文化已進入金屬器時代，並可從遺物看出與其他地區的交流與貿易。"
+},
+
+{
+q:"卑南遺址位於哪裡？",
+a:["臺東","臺北","新竹","嘉義"],
+e:"卑南遺址位於臺東，是臺灣重要的史前遺址。"
+},
+
+{
+q:"圓山遺址位於哪裡？",
+a:["臺北市","花蓮縣","屏東縣","臺東縣"],
+e:"圓山遺址位於臺北市，是臺灣重要的史前文化遺址。"
+},
+
+{
+q:"石鏃最可能用來做什麼？",
+a:["裝在箭上狩獵","煮飯","蓋房子","製作衣服"],
+e:"石鏃就是石製的箭頭，可以裝在箭上，用於狩獵。"
+},
+
+{
+q:"陶器可以提供什麼資訊？",
+a:["生活方式與文化特色","現代天氣","電腦速度","汽車品牌"],
+e:"陶器的形狀、製作方式與用途，可以幫助考古學家了解古人的生活與文化。"
+},
+
+{
+q:"遺物與遺跡的差別是？",
+a:["遺物是物品；遺跡是場所或痕跡","兩者完全相同","遺物只能是石頭","遺跡只能是陶器"],
+e:"遺物通常是古人留下的物品；遺跡則可能是房屋、墓葬、灰坑等場所或痕跡。"
+},
+
+{
+q:"考古學家重視地層，因為？",
+a:["可協助判斷埋藏先後","可以直接看到古人","可以知道天氣","可以找到現代玩具"],
+e:"不同地層的上下關係，可以協助研究遺物埋藏的先後順序。"
+},
+
+{
+q:"兩件文物在同一地層，較合理的做法是？",
+a:["比較地層與其他證據","直接認定完全同年代","馬上丟掉其中一件","猜測答案"],
+e:"考古研究不能只靠單一線索，需要綜合地層、器物特徵及其他證據。"
+},
+
+{
+q:"把破碎的陶片拼回原來的形狀，屬於？",
+a:["文物修復","挖土遊戲","現代製造","垃圾分類"],
+e:"把破碎文物整理、拼接與修復，是考古研究與保存工作的一部分。"
+},
+
+{
+q:"磨製石器通常會？",
+a:["反覆磨製使表面平整、刃部適用","直接丟進水裡","用紙包起來","放進冰箱"],
+e:"磨製石器會經過反覆加工，使表面較平整，並讓刃部更適合使用。"
+},
+
+{
+q:"哪一項最能說明可能有定居生活？",
+a:["房屋與生活遺構","一顆單獨的石頭","一片落葉","一隻現代汽車"],
+e:"如果發現房屋、爐灶、儲藏設施等生活遺構，可以提供定居生活的線索。"
+},
+
+{
+q:"考古發掘為什麼不能隨意拿走文物？",
+a:["位置與周圍關係也是證據","因為文物都很重","因為不能碰泥土","因為文物一定不能保存"],
+e:"文物出土的位置、深度以及與其他遺物的關係，都是重要考古證據。"
+},
+
+{
+q:"金屬器、陶器、石器一起出土，應該怎麼做？",
+a:["綜合多種證據推測","只看金屬器","只看陶器","隨便猜一個答案"],
+e:"考古學家會把不同種類的證據放在一起分析，才能更完整了解過去。"
+},
+
+{
+q:"哪一項屬於考古證據？",
+a:["房屋遺構","同學的作文","現代漫畫","電視廣告"],
+e:"房屋遺構是古人留下的生活痕跡，可以作為考古研究的重要證據。"
+},
+
+{
+q:"研究史前文化為什麼需要證據？",
+a:["讓推論有依據","讓故事更好笑","讓考古學家猜得更快","因為課本規定"],
+e:"考古研究必須建立在證據上，才能提出較合理的歷史推論。"
+},
+
+{
+q:"發現一件用途未知的器物，第一步應該？",
+a:["記錄位置、形狀、材質再比較","馬上丟掉","直接猜用途","拿回家使用"],
+e:"首先完整記錄出土位置、形狀、材質等資訊，再和其他發現比較，是較科學的研究方式。"
+}
+
+];
+
+let current=0;
+let score=0;
+let answered=false;
+
+function loadQuestion(){
+
+    answered=false;
+
+    const q=questions[current];
+
+    document.getElementById("questionNumber").textContent=
+        "第 "+(current+1)+" 題";
+
+    document.getElementById("question").textContent=q.q;
+
+    document.getElementById("current").textContent=current+1;
+
+    document.getElementById("progress").style.width=
+        ((current)/questions.length*100)+"%";
+
+    const options=document.getElementById("options");
+    options.innerHTML="";
+
+    q.a.forEach((answer,index)=>{
+
+        const button=document.createElement("button");
+
+        button.className="option";
+
+        button.textContent=
+            String.fromCharCode(65+index)+"．"+answer;
+
+        button.onclick=()=>checkAnswer(index,button);
+
+        options.appendChild(button);
+
+    });
+
+    document.getElementById("feedback").style.display="none";
+    document.getElementById("next").style.display="none";
+}
+
+function checkAnswer(index,button){
+
+    if(answered)return;
+
+    answered=true;
+
+    const buttons=document.querySelectorAll(".option");
+
+    buttons.forEach(b=>b.disabled=true);
+
+    if(index===0){
+
+        button.classList.add("correct");
+
+        score+=5;
+
+        document.getElementById("score").textContent=score;
+
+        document.getElementById("feedback").innerHTML=
+            "🎉 <strong>答對了！</strong><br>"+questions[current].e;
+
+    }else{
+
+        button.classList.add("wrong");
+
+        buttons[0].classList.add("correct");
+
+        document.getElementById("feedback").innerHTML=
+            "💡 <strong>再想一想！</strong><br>"+
+            "正確答案是：<strong>"+questions[current].a[0]+"</strong><br>"+
+            questions[current].e;
+
+    }
+
+    document.getElementById("feedback").style.display="block";
+
+    document.getElementById("next").style.display="block";
+}
+
+function nextQuestion(){
+
+    current++;
+
+    if(current>=questions.length){
+
+        showResult();
+
+    }else{
+
+        loadQuestion();
+
+    }
+}
+
+function showResult(){
+
+    document.getElementById("quiz").style.display="none";
+
+    document.getElementById("result").style.display="block";
+
+    document.getElementById("progress").style.width="100%";
+
+    document.getElementById("finalScore").textContent=score;
+
+    let badge="";
+
+    let text="";
+
+    if(score===100){
+
+        badge="🏆";
+
+        text="太厲害了！你已經成為真正的史前考古小達人！";
+
+    }else if(score>=80){
+
+        badge="🥇";
+
+        text="非常棒！你的考古知識相當扎實！";
+
+    }else if(score>=60){
+
+        badge="🥈";
+
+        text="表現不錯！再複習一下就會更厲害！";
+
+    }else if(score>=40){
+
+        badge="🥉";
+
+        text="已經踏入考古世界，再挑戰一次吧！";
+
+    }else{
+
+        badge="🔎";
+
+        text="考古探險才剛開始，再試一次看看！";
+
+    }
+
+    document.getElementById("badge").textContent=badge;
+
+    document.getElementById("resultText").textContent=text;
+}
+
+function restartGame(){
+
+    current=0;
+    score=0;
+
+    document.getElementById("score").textContent="0";
+
+    document.getElementById("quiz").style.display="block";
+
+    document.getElementById("result").style.display="none";
+
+    loadQuestion();
+
+}
+
+loadQuestion();
+
+</script>
+
+</body>
+</html>
